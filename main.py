@@ -34,25 +34,13 @@ last_news = {}
 def get_news():
     """Lấy tin tức từ website UTT hoặc trả về thông tin hướng dẫn"""
     try:
-        # Thông tin tin tức mẫu cho UTT (website thực tế cần đăng nhập)
-        sample_news = [
+        # Tin tức thực tế từ UTT
+        actual_news = [
             {
-                'title': '📢 Thông báo về lịch thi cuối kỳ học kỳ I năm học 2024-2025',
+                'title': '📢 THÔNG BÁO SỐ 1 (Trãi nghiệm VEC K76)',
                 'link': 'https://daotao.utt.edu.vn/congthongtin/Index.aspx',
-                'date': datetime.now().strftime('%d/%m/%Y'),
-                'content': 'Thông báo lịch thi cuối kỳ dành cho sinh viên UTT. Vui lòng kiểm tra lịch thi trên hệ thống đào tạo.'
-            },
-            {
-                'title': '📢 Hướng dẫn đăng ký học phần học kỳ II năm học 2024-2025',
-                'link': 'https://daotao.utt.edu.vn/congthongtin/Index.aspx',
-                'date': datetime.now().strftime('%d/%m/%Y'),
-                'content': 'Thông báo về thời gian và quy trình đăng ký học phần cho học kỳ mới.'
-            },
-            {
-                'title': '📢 Thông báo về học phí và các khoản thu học kỳ I',
-                'link': 'https://daotao.utt.edu.vn/congthongtin/Index.aspx',
-                'date': datetime.now().strftime('%d/%m/%Y'),
-                'content': 'Thông báo về học phí và các khoản thu dành cho sinh viên.'
+                'date': '07/09/2025',
+                'content': '**Phòng Đào Tạo** thông báo về chương trình trãi nghiệm VEC K76.\n\n🎓 **Kỷ niệm 80 năm phúng sự và phát triển**\n📅 **Ngày**: 07/09/2025\n🏢 **Đơn vị**: Phòng Đào Tạo'
             }
         ]
         
@@ -71,9 +59,8 @@ def get_news():
         except:
             pass
         
-        # Trả về tin tức mẫu với thông tin hướng dẫn
-        current_time = datetime.now()
-        selected_news = sample_news[current_time.hour % len(sample_news)]
+        # Trả về tin tức thực tế
+        selected_news = actual_news[0]  # Hiển thị tin mới nhất
         
         return [{
             'title': selected_news['title'],
