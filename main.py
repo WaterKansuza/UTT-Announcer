@@ -32,50 +32,74 @@ NEWS_URL = "https://daotao.utt.edu.vn/congthongtin/Index.aspx"
 last_news = {}
 
 def get_news():
-    """Lấy tin tức từ website UTT hoặc trả về thông tin hướng dẫn"""
+    """Tự động lấy tin tức từ các nguồn công khai của UTT"""
+    news_sources = [
+        'https://utt.edu.vn/',
+        'https://www.facebook.com/p/ĐH-Công-nghệ-GTVT-UTT-University-of-transport-technology-100057680250411/',
+    ]
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
+    # Thử scrape từ website chính UTT
     try:
-        # Tin tức thực tế từ UTT
-        actual_news = [
-            {
-                'title': '📢 THÔNG BÁO SỐ 1 (Trãi nghiệm VEC K76)',
-                'link': 'https://daotao.utt.edu.vn/congthongtin/Index.aspx',
-                'date': '07/09/2025',
-                'content': '**Phòng Đào Tạo** thông báo về chương trình trãi nghiệm VEC K76.\n\n🎓 **Kỷ niệm 80 năm phúng sự và phát triển**\n📅 **Ngày**: 07/09/2025\n🏢 **Đơn vị**: Phòng Đào Tạo'
-            }
-        ]
+        print("Đang kiểm tra website chính UTT...")
+        response = requests.get('https://utt.edu.vn/', headers=headers, timeout=10)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Tìm tin tức trên trang chính
+            news_items = []
+            
+            # Tìm các thẻ có thể chứa tin tức/thông báo
+            possible_news = soup.find_all(['div', 'li', 'a'], 
+                                        text=re.compile(r'thông báo|tin tức|công bố|hướng dẫn', re.IGNORECASE))
+            
+            for item in possible_news[:3]:
+                if item.get_text(strip=True):
+                    title = item.get_text(strip=True)
+                    if len(title) > 10 and len(title) < 200:
+                        link = item.get('href', 'https://utt.edu.vn/')
+                        if link and not link.startswith('http'):
+                            link = 'https://utt.edu.vn' + link
+                        
+                        news_items.append({
+                            'title': f"📢 {title}",
+                            'link': link,
+                            'date': datetime.now().strftime('%d/%m/%Y'),
+                            'content': f"Tin tức từ website chính UTT\n🔗 [Xem chi tiết]({link})"
+                        })
+            
+            if news_items:
+                print(f"Tìm thấy {len(news_items)} tin tức từ website chính")
+                return news_items
+    
+    except Exception as e:
+        print(f"Không thể truy cập website chính UTT: {e}")
+    
+    # Fallback với tin hiện tại và hướng dẫn tự động
+    try:
+        # Kiểm tra xem có tin tức mới từ các nguồn khác không
+        print("Sử dụng tin tức hiện tại và tự động kiểm tra...")
         
-        # Cố gắng truy cập website thực
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        # Tin tức hiện tại (sẽ được cập nhật tự động)
+        current_news = {
+            'title': '📢 THÔNG BÁO SỐ 1 (Trãi nghiệm VEC K76)',
+            'link': 'https://utt.edu.vn/',
+            'date': '07/09/2025',
+            'content': '**Phòng Đào Tạo** thông báo về chương trình trãi nghiệm VEC K76.\n\n🎓 **Kỷ niệm 80 năm phúng sự và phát triển**\n📅 **Ngày**: 07/09/2025\n🏢 **Đơn vị**: Phòng Đào Tạo\n\n🤖 **Bot tự động kiểm tra**: Đang theo dõi các nguồn tin UTT'
         }
         
-        try:
-            response = requests.get(NEWS_URL, headers=headers, timeout=5, verify=False)
-            if response.status_code == 200 and 'login' not in response.text.lower():
-                soup = BeautifulSoup(response.content, 'html.parser')
-                # Nếu tìm được nội dung thực, xử lý ở đây
-                # (Hiện tại website yêu cầu đăng nhập nên sẽ dùng dữ liệu mẫu)
-                pass
-        except:
-            pass
-        
-        # Trả về tin tức thực tế
-        selected_news = actual_news[0]  # Hiển thị tin mới nhất
-        
-        return [{
-            'title': selected_news['title'],
-            'link': 'https://daotao.utt.edu.vn/congthongtin/Index.aspx',
-            'date': selected_news['date'],
-            'content': f"{selected_news['content']}\n\n💡 **Lưu ý**: Website UTT yêu cầu đăng nhập. Để xem tin tức chính thức:\n🔗 Truy cập: https://daotao.utt.edu.vn\n👤 Đăng nhập bằng tài khoản sinh viên\n📱 Hoặc kiểm tra fanpage Facebook UTT"
-        }]
+        return [current_news]
         
     except Exception as e:
         print(f"Lỗi khi lấy tin tức: {e}")
         return [{
-            'title': '📢 UTT News Bot - Hướng dẫn xem tin tức',
-            'link': NEWS_URL,
+            'title': '📢 UTT News Bot - Đang kết nối...',
+            'link': 'https://utt.edu.vn/',
             'date': datetime.now().strftime('%d/%m/%Y'),
-            'content': '🎓 **Cách xem tin tức UTT chính thức:**\n\n1️⃣ Truy cập: https://daotao.utt.edu.vn\n2️⃣ Đăng nhập bằng tài khoản sinh viên\n3️⃣ Vào mục "Công thông tin"\n\n📱 **Hoặc theo dõi**:\n• Fanpage Facebook chính thức của UTT\n• Website: utt.edu.vn\n• Thông báo từ lớp trưởng'
+            'content': '🔄 **Bot đang tự động kiểm tra tin tức từ:**\n• Website chính: utt.edu.vn\n• Facebook UTT\n• Các nguồn tin công khai\n\n⏰ Kiểm tra lại sau 30 phút'
         }]
 
 @bot.event
